@@ -1,0 +1,3 @@
+# **Plantinator**
+
+Proyecto del robot selector de plantines...
