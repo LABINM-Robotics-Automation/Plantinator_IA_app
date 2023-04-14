@@ -44,13 +44,17 @@ class Initialize_mqqt_client(CoreRunningOps):
     """
 
     def operation(**kwargs):
-        """
-        mqtt_client = mqttClient()
-            if main_mqtt_client.is_connected():
-                mqtt_client.on_connect = on_connect_
-                mqtt_client.on_message = on_message_
-        """
-        kwargs["mqttclient"] = "mqttclient" #mqtt_client
+        if kwargs["op_mode"] == "run_op":
+            print("Initializing mqqt client")
+            """
+            mqtt_client = mqttClient()
+                if main_mqtt_client.is_connected():
+                    mqtt_client.on_connect = on_connect_
+                    mqtt_client.on_message = on_message_
+            """
+        elif kwargs["op_mode"] == "list_ops":
+            kwargs["mqttclient"] = "mqttclient" #mqtt_client
+
         return kwargs
 
 class Initialize_modbus_client(CoreRunningOps):
@@ -58,16 +62,20 @@ class Initialize_modbus_client(CoreRunningOps):
     """
 
     def operation(**kwargs):
-        """
-        modbus_client = SeedlingModbusClient(modServerIp,modServerPort)
-        if modbus_client.connectToServer() is True:
-            print("Modbus Client's connection -> successful")
-        else:
-            print("Modbus Client's connection -> failed")
-        """
-        kwargs["modbusclient"] = "modbusclient" #modbus_client
+        if kwargs["op_mode"] == "run_op":
+            print("Initializing modbus client")
+            """
+            modbus_client = SeedlingModbusClient(modServerIp,modServerPort)
+            if modbus_client.connectToServer() is True:
+                print("Modbus Client's connection -> successful")
+            else:
+                print("Modbus Client's connection -> failed")
+            """
+        elif kwargs["op_mode"] == "list_ops":
+            kwargs["modbusclient"] = "modbusclient" #modbus_client
 
         return kwargs
+
 
 class Load_models(CoreRunningOps):
     """ Load models for three predictions
@@ -82,15 +90,17 @@ class Load_models(CoreRunningOps):
     """
 
     def operation(**kwargs):
-        #TODO
-        """
-        model4horizontalimage = ...
-        model4verticalimage = ...
-        model4classification = ...
-        """
-        kwargs["model4horizontalimage"] = "model4horizontalimage" #model4horizontalimage
-        kwargs["model4verticalimage"] = "model4verticalimage"
-        kwargs["model4classification"] = "model4classification"
+        if kwargs["op_mode"] == "run_op":
+            print("Loading models")
+            """
+            model4horizontalimage = ...
+            model4verticalimage = ...
+            model4classification = ...
+            """
+        elif kwargs["op_mode"] == "list_ops":
+            kwargs["model4horizontalimage"] = "model4horizontalimage" #model4horizontalimage
+            kwargs["model4verticalimage"] = "model4verticalimage"
+            kwargs["model4classification"] = "model4classification"
 
         return kwargs
 
@@ -99,11 +109,15 @@ class Send_waiting_state_to_PLC(CoreRunningOps):
     """
 
     def operation(**kwargs):
-        """
-        if kwargs["modbus_client"].modbusConnectedFlag is True:
-            kwargs["modbus_client"].writeCvStatus(lsmodb.CV_WAITING_STAT)
-        """
-        kwargs["sendwaitingstate2plc"] = "sendwaitingstate2plc"
+        if kwargs["op_mode"] == "run_op":
+            print("Sending waiting state code to PLC")
+            """
+            if kwargs["modbus_client"].modbusConnectedFlag is True:
+                kwargs["modbus_client"].writeCvStatus(lsmodb.CV_WAITING_STAT)
+            """
+        elif kwargs["op_mode"] == "list_ops":
+            kwargs["sendwaitingstate2plc"] = "sendwaitingstate2plc"
+
         return kwargs
 
 class Start_IAcore_PLC_connection_loop(CoreRunningOps):
@@ -113,35 +127,37 @@ class Start_IAcore_PLC_connection_loop(CoreRunningOps):
     """
 
     def operation(**kwargs):
-        #TODO
-        """
-        while True:
-            if kwargs["modbus_client"].modbusConnectedFlag is True:
-                plcInstruction = kwargs["modbus_client"].getPLCInstruction()
-            if plcInstruction == lsmodb.PLC_PROCODD_INST:
-                if CV_system_switch == "SysP":
-                    if kwargs["modbus_client"].modbusConnectedFlag is True:
-                        kwargs["modbus_client"].writeCvStatus(
-                            lsmodb.CV_PROCESSING_STAT
-                        )
+        if kwargs["op_mode"] == "run_op":
+            print("Starting IA core PLC connection loop")
+            """
+            while True:
+                if kwargs["modbus_client"].modbusConnectedFlag is True:
+                    plcInstruction = kwargs["modbus_client"].getPLCInstruction()
+                if plcInstruction == lsmodb.PLC_PROCODD_INST:
+                    if CV_system_switch == "SysP":
+                        if kwargs["modbus_client"].modbusConnectedFlag is True:
+                            kwargs["modbus_client"].writeCvStatus(
+                                lsmodb.CV_PROCESSING_STAT
+                            )
 
-                    if CV_MODE == "offline":
+                        if CV_MODE == "offline":
 
-            elif plcInstruction == lsmodb.PLC_PROCEVEN_INST:
-                if CV_system_switch is "SysP":
-                    if kwargs["modbus_client"].modbusConnectedFlag is True:
-                        kwargs["modbus_client"].writeCvStatus(
-                            lsmodb.CV_PROCESSING_STAT
-                        )
+                elif plcInstruction == lsmodb.PLC_PROCEVEN_INST:
+                    if CV_system_switch is "SysP":
+                        if kwargs["modbus_client"].modbusConnectedFlag is True:
+                            kwargs["modbus_client"].writeCvStatus(
+                                lsmodb.CV_PROCESSING_STAT
+                            )
 
-            try:
-                cv2.imshow("Results",rgbGUI)
-                cv2.waitKey(15)
-            except:
-                pass
-                cv2.destroyAllWindows()
-        """
-        kwargs["startiacoreplcconnectionloop"] = "startiacoreplcconnectionloop"
+                try:
+                    cv2.imshow("Results",rgbGUI)
+                    cv2.waitKey(15)
+                except:
+                    pass
+                    cv2.destroyAllWindows()
+            """
+        elif kwargs["op_mode"] == "list_ops":
+            kwargs["startiacoreplcconnectionloop"] = "startiacoreplcconnectionloop"
 
         return kwargs
 

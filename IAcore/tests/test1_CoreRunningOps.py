@@ -13,9 +13,9 @@ class tdd_cases(unittest.TestCase):
                         "model4classification": "model4classification",
                         "sendwaitingstate2plc": "sendwaitingstate2plc",
                         "startiacoreplcconnectionloop": "startiacoreplcconnectionloop",
-                        "init":"init"
+                        "op_mode": "list_ops"
                        }
-        kwargs = CoreRunning.call_operations(init = "init")
+        kwargs = CoreRunning.call_operations(op_mode="list_ops")
         self.assertEqual(ideal_kwargs, kwargs)
 
 
