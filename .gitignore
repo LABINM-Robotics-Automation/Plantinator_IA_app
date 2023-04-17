@@ -1,5 +1,9 @@
 __pycache__/
 env/
+IAcore/models/gallery/
+IAcore/models/TekvotHub/weights/
+IAcore/models/TekvotHub/classifiers/SeedlingsNet/weights/
+IAcore/models/TekvotHub/detectors/yolov7/weights/
 .env
 env
 *.swo
