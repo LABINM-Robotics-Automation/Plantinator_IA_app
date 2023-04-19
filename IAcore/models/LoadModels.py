@@ -19,46 +19,72 @@ from TekvotHub.classifier import Classifier
 import matplotlib.pyplot as plt
 from TekvotHub.classifiers.SeedlingsNet.dataset_builder import getFeatures
 
-# ------------------------------------------
-detector_h = Detector(name='yolo7', # eg: 'yolov7' 'maskrcnn'
-                    weights='TekvotHub/detectors/yolov7/weights/yolov7-hseed.pt', 
-                    data='TekvotHub/weights/opt.yaml', 
-                    device='cuda:0')  
 
-detector_v = Detector(name='yolo7', # eg: 'yolov7' 'maskrcnn'
-                    weights='TekvotHub/detectors/yolov7/weights/yolov7-vseed.pt', 
-                    data='TekvotHub/weights/opt.yaml', 
-                    device='cuda:0')  
-
-classifier = Classifier(name='seedlingsnet_mlp_classifier',
-                        weights='TekvotHub/classifiers/SeedlingsNet/weights/seedlingnet_classifier_MLP.pt',
-                        device='cuda')
-# ------------------------------------------
-h1,w1,a1,h2,w2,a2 = 0,0,0,0,0,0
-
-if detector_h != None:
-    img_h = plt.imread('gallery_31_03_23/horizontal/rgb/seedlings_7_4.jpg')
-    horizontal_features = getFeatures(detector_h, img_h)
-    
-if detector_v != None:
-    img_v = plt.imread('gallery_31_03_23/vertical/rgb/seedlings_7_4.jpg')
-    depth = plt.imread('gallery_31_03_23/vertical/depth/seedlings_7_4.jpg')
-    ret, thresh1 = cv2.threshold(depth, 120, 255, cv2.THRESH_BINARY)
-    img_v_maksed = cv2.bitwise_and(img_v,img_v,mask = thresh1)
-    vertical_features = getFeatures(detector_v, img_v_maksed)
+class model4horizontalimage:
+    def __init__(self):
+        self.model = Detector(name='yolo7', # eg: 'yolov7' 'maskrcnn'
+                              weights='TekvotHub/detectors/yolov7/weights/yolov7-hseed.pt', 
+                              data='TekvotHub/weights/opt.yaml', 
+                              device='cuda:0')
+        
+    def inference(self, image):
+        return getFeatures(self.model, image)
 
 
-# verify if the predictions are not NoneType object
-if horizontal_features is not None and vertical_features is not None:
-    h1 = vertical_features["normalized"][0]
-    w1 = vertical_features["normalized"][1]
-    a1 = vertical_features["normalized"][2]
-    h2 = horizontal_features["normalized"][0]
-    w2 = horizontal_features["normalized"][1]
-    a2 = horizontal_features["normalized"][2]
-    features = torch.tensor([[a1, h1, w1, a2, h2, w2]]).float()
-quality_predicted = 'Good' if classifier.inference(features).item() else 'Not good'
-print('Quality:', quality_predicted)
+class model4verticalimage:
+    def __init__(self):
+        self.model = Detector(name='yolo7', # eg: 'yolov7' 'maskrcnn'
+                              weights='TekvotHub/detectors/yolov7/weights/yolov7-vseed.pt', 
+                              data='TekvotHub/weights/opt.yaml', 
+                              device='cuda:0')  
+
+    def inference(self,image,depth):
+        ret, thresh1 = cv2.threshold(depth, 120, 255, cv2.THRESH_BINARY)
+        image = cv2.bitwise_and(image,image,mask = thresh1)
+        return getFeatures(self.model, image)
+
+
+class model4classification:
+    def __init__(self):
+        self.model = Classifier(name='seedlingsnet_mlp_classifier',
+                           weights='TekvotHub/classifiers/SeedlingsNet/weights/seedlingnet_classifier_MLP.pt',
+                           device='cuda')
+        
+    def inference(self, features):
+        """
+        True: Good seedling
+        False: Not good seedling
+        """
+        return True if self.model.inference(features).item() else False
+
+
+if __name__=='__main__':
+
+    # This is how to use the models
+    horizontal_image = plt.imread('gallery/horizontal/rgb/seedlings_1_4.jpg')
+    model4horizontalimage_ = model4horizontalimage()
+    horizontal_features = model4horizontalimage_.inference(horizontal_image)
+
+
+    vertical_image = plt.imread('gallery/vertical/rgb/seedlings_1_4.jpg')
+    depth = plt.imread('gallery/vertical/depth/seedlings_1_4.jpg')
+    model4verticalimage_ = model4verticalimage()
+    vertical_features = model4verticalimage_.inference(vertical_image, depth)
+
+
+    classifier = model4classification()
+
+    if horizontal_features is not None and vertical_features is not None:
+        h1 = vertical_features["normalized"][0]
+        w1 = vertical_features["normalized"][1]
+        a1 = vertical_features["normalized"][2]
+        h2 = horizontal_features["normalized"][0]
+        w2 = horizontal_features["normalized"][1]
+        a2 = horizontal_features["normalized"][2]
+        features = torch.tensor([[a1, h1, w1, a2, h2, w2]]).float()
+        quality_predicted = 'Good' if classifier.inference(features) else 'Not good'
+
+    print(quality_predicted)
 
 
 
